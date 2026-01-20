@@ -2,49 +2,69 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Médico - Olharys</title>
+    <title>Painel Admin - Olharys</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 30px; border-radius: 10px; width: 350px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #008da8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;}
-        button:hover { background: #005f73; }
+        body { font-family: sans-serif; background: #e0e7ff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 15px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #00d2d3; margin-top: 0; }
+        label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #0c1c2c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #00d2d3; color: #0c1c2c; }
+        #msg { margin-top: 15px; font-weight: bold; min-height: 20px;}
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>👨‍⚕️ Liberar Horário</h2>
+        <h2>📅 Gerenciar Agenda</h2>
+        
+        <label>Profissional</label>
+        <select id="profissional">
+            <option value="optometrista">Guilherme (Optometrista)</option>
+            <option value="oftalmologista">Dr. Eduardo (Oftalmologista)</option>
+        </select>
+
+        <label>Data</label>
         <input type="date" id="data">
+        
+        <label>Horário</label>
         <input type="time" id="hora">
-        <button onclick="salvar()">CADASTRAR DISPONIBILIDADE</button>
-        <p id="msg"></p>
+        
+        <button onclick="salvar()">LIBERAR HORÁRIO</button>
+        <div id="msg"></div>
     </div>
 
     <script>
-        // --- COLE SUA URL AQUI ---
-        const URL = "https://script.google.com/macros/s/AKfycbxmdoBv5wnCnBN3X886kjxpj7KPYvaJebycRn1D91oO9OyF6cRh97gY33qDnQDq7XlM/exec"; 
+        // --- COLE SUA NOVA URL AQUI ---
+        const URL = "SUA_URL_DO_APPS_SCRIPT_AQUI"; 
 
         function salvar() {
             const btn = document.querySelector("button");
             const msg = document.getElementById("msg");
+            
+            if(!document.getElementById("data").value || !document.getElementById("hora").value) {
+                alert("Preencha data e hora!"); return;
+            }
+
             btn.disabled = true; btn.innerText = "Salvando...";
 
             fetch(URL, {
                 method: 'POST', 
                 body: JSON.stringify({
                     action: "criar_horario",
+                    profissional: document.getElementById("profissional").value, // Envia quem é
                     data: document.getElementById("data").value,
                     hora: document.getElementById("hora").value
                 })
             })
             .then(r => r.json())
             .then(d => {
-                msg.innerText = "✅ Horário Criado!";
+                msg.innerText = "✅ Horário Liberado!";
                 msg.style.color = "green";
                 setTimeout(() => msg.innerText = "", 2000);
             })
-            .catch(e => msg.innerText = "Erro")
-            .finally(() => { btn.disabled = false; btn.innerText = "CADASTRAR DISPONIBILIDADE"; });
+            .catch(() => { msg.innerText = "Erro ao salvar"; msg.style.color = "red"; })
+            .finally(() => { btn.disabled = false; btn.innerText = "LIBERAR HORÁRIO"; });
         }
     </script>
 </body>
