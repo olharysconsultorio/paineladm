@@ -2,70 +2,157 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin - Olharys</title>
+    <title>Painel Gerencial - Olharys</title>
     <style>
-        body { font-family: sans-serif; background: #e0e7ff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 40px; border-radius: 15px; width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: #00d2d3; margin-top: 0; }
-        label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #0c1c2c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .admin-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 450px; }
+        h2 { color: #0c1c2c; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #00d2d3; padding-bottom: 10px; display: inline-block; width: 100%; }
+        
+        label { font-weight: 600; color: #555; display: block; margin-bottom: 5px; margin-top: 15px; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        
+        button { width: 100%; padding: 15px; background: #0c1c2c; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 25px; transition: 0.3s; }
         button:hover { background: #00d2d3; color: #0c1c2c; }
-        #msg { margin-top: 15px; font-weight: bold; min-height: 20px;}
+        
+        #status { text-align: center; margin-top: 15px; font-weight: bold; min-height: 20px; }
+        .hint { font-size: 0.8rem; color: #888; margin-top: -10px; margin-bottom: 10px; display: block; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>📅 Gerenciar Agenda</h2>
-        
-        <label>Profissional</label>
-        <select id="profissional">
-            <option value="optometrista">Guilherme (Optometrista)</option>
-            <option value="oftalmologista">Dr. Eduardo (Oftalmologista)</option>
-        </select>
 
-        <label>Data</label>
-        <input type="date" id="data">
-        
-        <label>Horário</label>
-        <input type="time" id="hora">
-        
-        <button onclick="salvar()">LIBERAR HORÁRIO</button>
-        <div id="msg"></div>
+<div class="admin-card">
+    <h2>📅 Gerenciador de Agenda</h2>
+
+    <label>1. Cidade de Atendimento</label>
+    <select id="cidade" onchange="atualizarProfissionais()">
+        <option value="">Selecione...</option>
+        <option value="Curitiba">Curitiba</option>
+        <option value="Londrina">Londrina</option>
+        <option value="Maringá">Maringá</option>
+        <option value="Cascavel">Cascavel</option>
+        <option value="Ponta Grossa">Ponta Grossa</option>
+        <option value="Foz do Iguaçu">Foz do Iguaçu</option>
+        <option value="São José dos Pinhais">São José dos Pinhais</option>
+        <option value="Colombo">Colombo</option>
+    </select>
+
+    <label>2. Especialidade</label>
+    <select id="tipo" onchange="atualizarProfissionais()">
+        <option value="Optometrista">Optometrista</option>
+        <option value="Oftalmologista">Oftalmologista</option>
+    </select>
+
+    <label>3. Profissional Responsável</label>
+    <select id="profissional">
+        <option value="">Selecione cidade e tipo primeiro...</option>
+    </select>
+    <span class="hint">Lista gerada automaticamente para a cidade selecionada.</span>
+
+    <div style="display: flex; gap: 10px;">
+        <div style="flex: 1;">
+            <label>Data</label>
+            <input type="date" id="data">
+        </div>
+        <div style="flex: 1;">
+            <label>Hora</label>
+            <input type="time" id="hora">
+        </div>
     </div>
 
-    <script>
-        // --- COLE SUA NOVA URL AQUI ---
-        const URL = "https://script.google.com/macros/s/AKfycbxmdoBv5wnCnBN3X886kjxpj7KPYvaJebycRn1D91oO9OyF6cRh97gY33qDnQDq7XlM/exec"; 
+    <button onclick="salvarHorario()">LIBERAR HORÁRIO NA AGENDA</button>
+    <div id="status"></div>
+</div>
 
-        function salvar() {
-            const btn = document.querySelector("button");
-            const msg = document.getElementById("msg");
-            
-            if(!document.getElementById("data").value || !document.getElementById("hora").value) {
-                alert("Preencha data e hora!"); return;
-            }
+<script>
+    // ======================================================
+    // COLE SUA URL DO GOOGLE APPS SCRIPT ABAIXO (ENTRE AS ASPAS)
+    // ======================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby85zObFW0ot6Hj2QN1n4FYIPe7jvhyISbIzSGF5bHD4qvMgpKXPiqe5t2C10L5bciN/exec"; 
 
-            btn.disabled = true; btn.innerText = "Salvando...";
+    // BANCO DE DADOS FICTÍCIO DE NOMES
+    const nomesOpto = ["Guilherme", "Lucas", "Mariana", "Beatriz", "Rafael"];
+    const nomesOftalmo = ["Dr. Eduardo Sodré", "Dra. Juliana Mendes"];
 
-            fetch(URL, {
-                method: 'POST', 
-                body: JSON.stringify({
-                    action: "criar_horario",
-                    profissional: document.getElementById("profissional").value, // Envia quem é
-                    data: document.getElementById("data").value,
-                    hora: document.getElementById("hora").value
-                })
-            })
-            .then(r => r.json())
-            .then(d => {
-                msg.innerText = "✅ Horário Liberado!";
-                msg.style.color = "green";
-                setTimeout(() => msg.innerText = "", 2000);
-            })
-            .catch(() => { msg.innerText = "Erro ao salvar"; msg.style.color = "red"; })
-            .finally(() => { btn.disabled = false; btn.innerText = "LIBERAR HORÁRIO"; });
+    function atualizarProfissionais() {
+        const cidade = document.getElementById("cidade").value;
+        const tipo = document.getElementById("tipo").value;
+        const selectProf = document.getElementById("profissional");
+        
+        selectProf.innerHTML = ""; // Limpa lista
+
+        if (!cidade) {
+            selectProf.innerHTML = "<option>Selecione a cidade...</option>";
+            return;
         }
-    </script>
+
+        let listaNomes = [];
+        if (tipo === "Optometrista") {
+            listaNomes = nomesOpto; // Usa os 5 nomes base
+        } else {
+            listaNomes = nomesOftalmo; // Usa os 2 nomes base
+        }
+
+        // Gera as opções combinando Nome + Tipo
+        listaNomes.forEach(nome => {
+            let option = document.createElement("option");
+            // Ex: "Guilherme - Optometrista"
+            option.value = `${nome} - ${tipo}`; 
+            option.text = nome;
+            selectProf.appendChild(option);
+        });
+    }
+
+    function salvarHorario() {
+        const btn = document.querySelector("button");
+        const status = document.getElementById("status");
+        
+        const cidade = document.getElementById("cidade").value;
+        const profissional = document.getElementById("profissional").value;
+        const data = document.getElementById("data").value;
+        const hora = document.getElementById("hora").value;
+
+        if(!cidade || !profissional || !data || !hora) {
+            alert("Preencha todos os campos!"); return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+        status.innerText = "";
+
+        const payload = {
+            action: "criar_horario",
+            cidade: cidade,
+            profissional: profissional,
+            data: data,
+            hora: hora
+        };
+
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.result === "success") {
+                status.style.color = "green";
+                status.innerText = "✅ Horário Liberado com Sucesso!";
+                // Limpa apenas data/hora para facilitar cadastrar o próximo
+                document.getElementById("hora").value = ""; 
+            } else {
+                status.style.color = "red";
+                status.innerText = "Erro ao salvar.";
+            }
+        })
+        .catch(err => {
+            status.style.color = "red";
+            status.innerText = "Erro de conexão.";
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerText = "LIBERAR HORÁRIO NA AGENDA";
+        });
+    }
+</script>
+
 </body>
 </html>
