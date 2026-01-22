@@ -27,7 +27,6 @@
         <option value="Marechal C. Rondon">Marechal C. Rondon</option>
         <option value="Toledo">Toledo</option>
         <option value="Altonia">Altonia</option>
-        <option value="Cascavel">Cascavel</option>
     </select>
 
     <label style="float:left; font-weight:bold;">Especialidade</label>
@@ -51,15 +50,14 @@
 
     // BANCO DE DADOS: 5 Optometristas e 3 Oftalmologistas por cidade
     const equipe = {
-        "Umuarama": { "Optometrista": ["Guilherme A.", "Lucas B.", "Mariana C.", "Beatriz D.", "Rafael E."], "Oftalmologista": ["Dr. Eduardo S.", "Dra. Juliana M.", "Dr. Roberto C."] },
-        "Perobal": { "Optometrista": ["Ana Paula", "Bruno C.", "Carla D.", "Daniel R.", "Felipe M."], "Oftalmologista": ["Dr. Marcos V.", "Dra. Helena K.", "Dr. Paulo R."] },
-        "Douradina": { "Optometrista": ["Gabriela T.", "Hugo N.", "Igor P.", "Julia R.", "Kleber S."], "Oftalmologista": ["Dr. Cesar A.", "Dra. Larissa B.", "Dr. Otávio F."] },
+        "Umuarama": { "Optometrista": ["Guilherme A.", "Cleide B.", "Ronaldo C."], "Oftalmologista": ["Dr. Eduardo Sodre S."] },
+        "Perobal": { "Optometrista": ["João Paulo"] },
+        "Douradina": { "Optometrista": ["João Paulo"] },
         "Palotina": { "Optometrista": ["Luan V.", "Mirella X.", "Nicolas Z.", "Olivia A.", "Pedro B."], "Oftalmologista": ["Dr. Tiago M.", "Dra. Vanessa L.", "Dr. Wesley K."] },
         "Marechal C. Rondon": { "Optometrista": ["Quirino C.", "Raquel D.", "Samuel E.", "Tatiane F.", "Ulisses G."], "Oftalmologista": ["Dr. Yuri H.", "Dra. Zilda I.", "Dr. André J."] },
         "Toledo": { "Optometrista": ["Victor K.", "Wagner L.", "Xavier M.", "Yasmin N.", "Zeca O."], "Oftalmologista": ["Dr. Bento P.", "Dra. Cecilia Q.", "Dr. Davi R."] },
-        "Altonia": { "Optometrista": ["Amanda S.", "Breno T.", "Camila U.", "Diego V.", "Elisa W."], "Oftalmologista": ["Dr. Fabio X.", "Dra. Giovana Y.", "Dr. Helio Z."] },
-        "Cascavel": { "Optometrista": ["Isabela A.", "João B.", "Karina C.", "Leonardo D.", "Monica E."], "Oftalmologista": ["Dr. Nelson F.", "Dra. Patricia G.", "Dr. Quintino H."] }
-    };
+        "Altonia": { "Optometrista": ["João Paulo"] },
+         };
 
     function atualizarProfissionais() {
         const cid = document.getElementById("cidade").value;
@@ -105,3 +103,4 @@
 </script>
 </body>
 </html>
+
