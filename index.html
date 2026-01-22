@@ -26,14 +26,14 @@
     <label>1. Cidade de Atendimento</label>
     <select id="cidade" onchange="atualizarProfissionais()">
         <option value="">Selecione...</option>
-        <option value="Curitiba">Curitiba</option>
-        <option value="Londrina">Londrina</option>
-        <option value="Maringá">Maringá</option>
+        <option value="Umuarama">Umuarama</option>
+        <option value="Perobal">Perobal</option>
+        <option value="Douradina">Douradina</option>
+        <option value="Palotina">Palotina</option>
+        <option value="Marechal C. Rondon">Marechal C. Rondon</option>
+        <option value="Toledo">Toledo</option>
+        <option value="Altonia">Altonia</option>
         <option value="Cascavel">Cascavel</option>
-        <option value="Ponta Grossa">Ponta Grossa</option>
-        <option value="Foz do Iguaçu">Foz do Iguaçu</option>
-        <option value="São José dos Pinhais">São José dos Pinhais</option>
-        <option value="Colombo">Colombo</option>
     </select>
 
     <label>2. Especialidade</label>
@@ -46,7 +46,7 @@
     <select id="profissional">
         <option value="">Selecione cidade e tipo primeiro...</option>
     </select>
-    <span class="hint">Lista gerada automaticamente para a cidade selecionada.</span>
+    <span class="hint">Lista exclusiva da cidade selecionada.</span>
 
     <div style="display: flex; gap: 10px;">
         <div style="flex: 1;">
@@ -65,41 +65,72 @@
 
 <script>
     // ======================================================
-    // COLE SUA URL DO GOOGLE APPS SCRIPT ABAIXO (ENTRE AS ASPAS)
+    // COLE SUA URL DO GOOGLE APPS SCRIPT ABAIXO
     // ======================================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby85zObFW0ot6Hj2QN1n4FYIPe7jvhyISbIzSGF5bHD4qvMgpKXPiqe5t2C10L5bciN/exec"; 
 
-    // BANCO DE DADOS FICTÍCIO DE NOMES
-    const nomesOpto = ["Guilherme", "Lucas", "Mariana", "Beatriz", "Rafael"];
-    const nomesOftalmo = ["Dr. Eduardo Sodré", "Dra. Juliana Mendes"];
+    // --- BASE DE DADOS DOS PROFISSIONAIS (NÃO MISTURA CIDADES) ---
+    const equipePorCidade = {
+        "Umuarama": {
+            "Optometrista": ["Guilherme Silva", "Lucas Souza", "Mariana Oliveira", "Beatriz Santos", "Rafael Lima"],
+            "Oftalmologista": ["Dr. Eduardo Sodré", "Dra. Juliana Mendes", "Dr. Roberto Campos"]
+        },
+        "Perobal": {
+            "Optometrista": ["Ana Paula", "Bruno Costa", "Carla Dias", "Daniela Rocha", "Felipe Melo"],
+            "Oftalmologista": ["Dr. Marcos Vinicius", "Dra. Helena K.", "Dr. Paulo Ricardo"]
+        },
+        "Douradina": {
+            "Optometrista": ["Gabriela T.", "Hugo N.", "Igor P.", "Julia R.", "Kleber S."],
+            "Oftalmologista": ["Dr. Cesar Augusto", "Dra. Larissa B.", "Dr. Otávio F."]
+        },
+        "Palotina": {
+            "Optometrista": ["Luan V.", "Mirella X.", "Nicolas Z.", "Olivia A.", "Pedro B."],
+            "Oftalmologista": ["Dr. Tiago M.", "Dra. Vanessa L.", "Dr. Wesley K."]
+        },
+        "Marechal C. Rondon": {
+            "Optometrista": ["Quirino C.", "Raquel D.", "Samuel E.", "Tatiane F.", "Ulisses G."],
+            "Oftalmologista": ["Dr. Yuri H.", "Dra. Zilda I.", "Dr. André J."]
+        },
+        "Toledo": {
+            "Optometrista": ["Victor K.", "Wagner L.", "Xavier M.", "Yasmin N.", "Zeca O."],
+            "Oftalmologista": ["Dr. Bento P.", "Dra. Cecilia Q.", "Dr. Davi R."]
+        },
+        "Altonia": {
+            "Optometrista": ["Amanda S.", "Breno T.", "Camila U.", "Diego V.", "Elisa W."],
+            "Oftalmologista": ["Dr. Fabio X.", "Dra. Giovana Y.", "Dr. Helio Z."]
+        },
+        "Cascavel": {
+            "Optometrista": ["Isabela A.", "João B.", "Karina C.", "Leonardo D.", "Monica E."],
+            "Oftalmologista": ["Dr. Nelson F.", "Dra. Patricia G.", "Dr. Quintino H."]
+        }
+    };
 
     function atualizarProfissionais() {
         const cidade = document.getElementById("cidade").value;
         const tipo = document.getElementById("tipo").value;
         const selectProf = document.getElementById("profissional");
         
-        selectProf.innerHTML = ""; // Limpa lista
+        selectProf.innerHTML = ""; // Limpa lista anterior
 
         if (!cidade) {
             selectProf.innerHTML = "<option>Selecione a cidade...</option>";
             return;
         }
 
-        let listaNomes = [];
-        if (tipo === "Optometrista") {
-            listaNomes = nomesOpto; // Usa os 5 nomes base
-        } else {
-            listaNomes = nomesOftalmo; // Usa os 2 nomes base
-        }
+        // Busca a lista específica da cidade e especialidade
+        const listaNomes = equipePorCidade[cidade][tipo];
 
-        // Gera as opções combinando Nome + Tipo
-        listaNomes.forEach(nome => {
-            let option = document.createElement("option");
-            // Ex: "Guilherme - Optometrista"
-            option.value = `${nome} - ${tipo}`; 
-            option.text = nome;
-            selectProf.appendChild(option);
-        });
+        if (listaNomes) {
+            listaNomes.forEach(nome => {
+                let option = document.createElement("option");
+                // Salva no formato: "Nome (Tipo)" para ficar claro no Banco de Dados
+                option.value = `${nome} - ${tipo}`; 
+                option.text = nome;
+                selectProf.appendChild(option);
+            });
+        } else {
+            selectProf.innerHTML = "<option>Sem profissionais cadastrados</option>";
+        }
     }
 
     function salvarHorario() {
@@ -136,7 +167,6 @@
             if(data.result === "success") {
                 status.style.color = "green";
                 status.innerText = "✅ Horário Liberado com Sucesso!";
-                // Limpa apenas data/hora para facilitar cadastrar o próximo
                 document.getElementById("hora").value = ""; 
             } else {
                 status.style.color = "red";
