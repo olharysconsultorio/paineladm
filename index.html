@@ -4,26 +4,20 @@
     <meta charset="UTF-8">
     <title>Painel Gerencial - Olharys</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .admin-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 450px; }
-        h2 { color: #0c1c2c; text-align: center; margin-bottom: 25px; border-bottom: 2px solid #00d2d3; padding-bottom: 10px; display: inline-block; width: 100%; }
-        
-        label { font-weight: 600; color: #555; display: block; margin-bottom: 5px; margin-top: 15px; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        
-        button { width: 100%; padding: 15px; background: #0c1c2c; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        body { font-family: sans-serif; background: #f4f6f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 12px; width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h2 { color: #00d2d3; margin-top: 0; }
+        select, input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #0c1c2c; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         button:hover { background: #00d2d3; color: #0c1c2c; }
-        
-        #status { text-align: center; margin-top: 15px; font-weight: bold; min-height: 20px; }
-        .hint { font-size: 0.8rem; color: #888; margin-top: -10px; margin-bottom: 10px; display: block; }
+        .hint { font-size: 0.8rem; color: #888; display: block; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
-<div class="admin-card">
-    <h2>📅 Gerenciador de Agenda</h2>
-
-    <label>1. Cidade de Atendimento</label>
+<div class="box">
+    <h2>📅 Agenda Médica</h2>
+    
+    <label style="float:left; font-weight:bold;">Cidade</label>
     <select id="cidade" onchange="atualizarProfissionais()">
         <option value="">Selecione...</option>
         <option value="Umuarama">Umuarama</option>
@@ -36,153 +30,78 @@
         <option value="Cascavel">Cascavel</option>
     </select>
 
-    <label>2. Especialidade</label>
+    <label style="float:left; font-weight:bold;">Especialidade</label>
     <select id="tipo" onchange="atualizarProfissionais()">
         <option value="Optometrista">Optometrista</option>
         <option value="Oftalmologista">Oftalmologista</option>
     </select>
 
-    <label>3. Profissional Responsável</label>
-    <select id="profissional">
-        <option value="">Selecione cidade e tipo primeiro...</option>
-    </select>
-    <span class="hint">Lista exclusiva da cidade selecionada.</span>
+    <label style="float:left; font-weight:bold;">Profissional</label>
+    <select id="profissional"><option>Selecione cidade...</option></select>
+    <span class="hint">Lista carregada automaticamente.</span>
 
-    <div style="display: flex; gap: 10px;">
-        <div style="flex: 1;">
-            <label>Data</label>
-            <input type="date" id="data">
-        </div>
-        <div style="flex: 1;">
-            <label>Hora</label>
-            <input type="time" id="hora">
-        </div>
-    </div>
-
-    <button onclick="salvarHorario()">LIBERAR HORÁRIO NA AGENDA</button>
-    <div id="status"></div>
+    <input type="date" id="data">
+    <input type="time" id="hora">
+    <button onclick="salvarHorario()">LIBERAR HORÁRIO</button>
+    <div id="status" style="margin-top:15px; font-weight:bold;"></div>
 </div>
 
 <script>
-    // ======================================================
-    // COLE SUA URL DO GOOGLE APPS SCRIPT ABAIXO
-    // ======================================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby85zObFW0ot6Hj2QN1n4FYIPe7jvhyISbIzSGF5bHD4qvMgpKXPiqe5t2C10L5bciN/exec"; 
+    const URL = "https://script.google.com/macros/s/AKfycbxQLUvSYIwuy2i56G3XB8KBoXPJCn_Pmge9brgnbK4GxIGrDCBKZXc-d95leLv23lV4/exec"; // <--- COLE AQUI
 
-    // --- BASE DE DADOS DOS PROFISSIONAIS (NÃO MISTURA CIDADES) ---
-    const equipePorCidade = {
-        "Umuarama": {
-            "Optometrista": ["Guilherme Silva", "Lucas Souza", "Mariana Oliveira", "Beatriz Santos", "Rafael Lima"],
-            "Oftalmologista": ["Dr. Eduardo Sodré", "Dra. Juliana Mendes", "Dr. Roberto Campos"]
-        },
-        "Perobal": {
-            "Optometrista": ["Ana Paula", "Bruno Costa", "Carla Dias", "Daniela Rocha", "Felipe Melo"],
-            "Oftalmologista": ["Dr. Marcos Vinicius", "Dra. Helena K.", "Dr. Paulo Ricardo"]
-        },
-        "Douradina": {
-            "Optometrista": ["Gabriela T.", "Hugo N.", "Igor P.", "Julia R.", "Kleber S."],
-            "Oftalmologista": ["Dr. Cesar Augusto", "Dra. Larissa B.", "Dr. Otávio F."]
-        },
-        "Palotina": {
-            "Optometrista": ["Luan V.", "Mirella X.", "Nicolas Z.", "Olivia A.", "Pedro B."],
-            "Oftalmologista": ["Dr. Tiago M.", "Dra. Vanessa L.", "Dr. Wesley K."]
-        },
-        "Marechal C. Rondon": {
-            "Optometrista": ["Quirino C.", "Raquel D.", "Samuel E.", "Tatiane F.", "Ulisses G."],
-            "Oftalmologista": ["Dr. Yuri H.", "Dra. Zilda I.", "Dr. André J."]
-        },
-        "Toledo": {
-            "Optometrista": ["Victor K.", "Wagner L.", "Xavier M.", "Yasmin N.", "Zeca O."],
-            "Oftalmologista": ["Dr. Bento P.", "Dra. Cecilia Q.", "Dr. Davi R."]
-        },
-        "Altonia": {
-            "Optometrista": ["Amanda S.", "Breno T.", "Camila U.", "Diego V.", "Elisa W."],
-            "Oftalmologista": ["Dr. Fabio X.", "Dra. Giovana Y.", "Dr. Helio Z."]
-        },
-        "Cascavel": {
-            "Optometrista": ["Isabela A.", "João B.", "Karina C.", "Leonardo D.", "Monica E."],
-            "Oftalmologista": ["Dr. Nelson F.", "Dra. Patricia G.", "Dr. Quintino H."]
-        }
+    // BANCO DE DADOS: 5 Optometristas e 3 Oftalmologistas por cidade
+    const equipe = {
+        "Umuarama": { "Optometrista": ["Guilherme A.", "Lucas B.", "Mariana C.", "Beatriz D.", "Rafael E."], "Oftalmologista": ["Dr. Eduardo S.", "Dra. Juliana M.", "Dr. Roberto C."] },
+        "Perobal": { "Optometrista": ["Ana Paula", "Bruno C.", "Carla D.", "Daniel R.", "Felipe M."], "Oftalmologista": ["Dr. Marcos V.", "Dra. Helena K.", "Dr. Paulo R."] },
+        "Douradina": { "Optometrista": ["Gabriela T.", "Hugo N.", "Igor P.", "Julia R.", "Kleber S."], "Oftalmologista": ["Dr. Cesar A.", "Dra. Larissa B.", "Dr. Otávio F."] },
+        "Palotina": { "Optometrista": ["Luan V.", "Mirella X.", "Nicolas Z.", "Olivia A.", "Pedro B."], "Oftalmologista": ["Dr. Tiago M.", "Dra. Vanessa L.", "Dr. Wesley K."] },
+        "Marechal C. Rondon": { "Optometrista": ["Quirino C.", "Raquel D.", "Samuel E.", "Tatiane F.", "Ulisses G."], "Oftalmologista": ["Dr. Yuri H.", "Dra. Zilda I.", "Dr. André J."] },
+        "Toledo": { "Optometrista": ["Victor K.", "Wagner L.", "Xavier M.", "Yasmin N.", "Zeca O."], "Oftalmologista": ["Dr. Bento P.", "Dra. Cecilia Q.", "Dr. Davi R."] },
+        "Altonia": { "Optometrista": ["Amanda S.", "Breno T.", "Camila U.", "Diego V.", "Elisa W."], "Oftalmologista": ["Dr. Fabio X.", "Dra. Giovana Y.", "Dr. Helio Z."] },
+        "Cascavel": { "Optometrista": ["Isabela A.", "João B.", "Karina C.", "Leonardo D.", "Monica E."], "Oftalmologista": ["Dr. Nelson F.", "Dra. Patricia G.", "Dr. Quintino H."] }
     };
 
     function atualizarProfissionais() {
-        const cidade = document.getElementById("cidade").value;
-        const tipo = document.getElementById("tipo").value;
-        const selectProf = document.getElementById("profissional");
+        const cid = document.getElementById("cidade").value;
+        const tip = document.getElementById("tipo").value;
+        const sel = document.getElementById("profissional");
+        sel.innerHTML = "";
         
-        selectProf.innerHTML = ""; // Limpa lista anterior
-
-        if (!cidade) {
-            selectProf.innerHTML = "<option>Selecione a cidade...</option>";
-            return;
-        }
-
-        // Busca a lista específica da cidade e especialidade
-        const listaNomes = equipePorCidade[cidade][tipo];
-
-        if (listaNomes) {
-            listaNomes.forEach(nome => {
-                let option = document.createElement("option");
-                // Salva no formato: "Nome (Tipo)" para ficar claro no Banco de Dados
-                option.value = `${nome} - ${tipo}`; 
-                option.text = nome;
-                selectProf.appendChild(option);
+        if(equipe[cid] && equipe[cid][tip]) {
+            equipe[cid][tip].forEach(nome => {
+                let opt = document.createElement("option");
+                opt.value = `${nome} - ${tip}`; // Salva assim no banco
+                opt.text = nome;
+                sel.appendChild(opt);
             });
         } else {
-            selectProf.innerHTML = "<option>Sem profissionais cadastrados</option>";
+            sel.innerHTML = "<option>Indisponível</option>";
         }
     }
 
     function salvarHorario() {
         const btn = document.querySelector("button");
-        const status = document.getElementById("status");
-        
-        const cidade = document.getElementById("cidade").value;
-        const profissional = document.getElementById("profissional").value;
-        const data = document.getElementById("data").value;
-        const hora = document.getElementById("hora").value;
+        const st = document.getElementById("status");
+        btn.disabled = true; btn.innerText = "Salvando...";
 
-        if(!cidade || !profissional || !data || !hora) {
-            alert("Preencha todos os campos!"); return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "Salvando...";
-        status.innerText = "";
-
-        const payload = {
-            action: "criar_horario",
-            cidade: cidade,
-            profissional: profissional,
-            data: data,
-            hora: hora
-        };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.result === "success") {
-                status.style.color = "green";
-                status.innerText = "✅ Horário Liberado com Sucesso!";
-                document.getElementById("hora").value = ""; 
+        fetch(URL, {
+            method: 'POST', 
+            body: JSON.stringify({
+                action: "criar_horario",
+                cidade: document.getElementById("cidade").value,
+                profissional: document.getElementById("profissional").value,
+                data: document.getElementById("data").value,
+                hora: document.getElementById("hora").value
+            })
+        }).then(r => r.json()).then(d => {
+            if(d.result === "success") {
+                st.style.color = "green"; st.innerText = "✅ Salvo!";
             } else {
-                status.style.color = "red";
-                status.innerText = "Erro ao salvar.";
+                st.style.color = "red"; st.innerText = "Erro.";
             }
-        })
-        .catch(err => {
-            status.style.color = "red";
-            status.innerText = "Erro de conexão.";
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerText = "LIBERAR HORÁRIO NA AGENDA";
+            btn.disabled = false; btn.innerText = "LIBERAR HORÁRIO";
         });
     }
 </script>
-
 </body>
 </html>
